@@ -26,6 +26,7 @@ export function useGenerate(toolName = "unknown") {
     const alreadyUsedFree = typeof window !== "undefined"
       ? localStorage.getItem(FREE_KEY) === "true" : false;
 
+    // Client-side gate: not logged in and already used free generation
     if (!isAuthed && alreadyUsedFree) {
       setRequiresAuth(true);
       return null;
@@ -41,9 +42,16 @@ export function useGenerate(toolName = "unknown") {
       body: JSON.stringify(body),
     });
 
-    if (res.status === 401) { setRequiresAuth(true); return null; }
-    if (res.status === 429) throw new Error("LIMIT_REACHED");
-    if (!res.ok) { const err = await res.json(); throw new Error(err?.error?.message || "Generation failed."); }
+    // Both 401 and 429 mean "needs to sign in" — show the modal
+    if (res.status === 401 || res.status === 429) {
+      setRequiresAuth(true);
+      return null;
+    }
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err?.error?.message || "Generation failed.");
+    }
 
     const data = await res.json();
     if (!isAuthed) localStorage.setItem(FREE_KEY, "true");
