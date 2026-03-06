@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -74,6 +76,7 @@ function ScoreBadge({ score }) {
   const dash = (score / 100) * circumference;
   return (
     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <div style={{ position:"relative", width:40, height:40 }}>
         <svg width="40" height="40" viewBox="0 0 40 40">
           <circle cx="20" cy="20" r="17" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3"/>
@@ -178,6 +181,8 @@ function HookCard({ hook, index }) {
 }
 
 export default function HookLab() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("hooklab");
+
   const [topic, setTopic]               = useState("");
   const [niche, setNiche]               = useState("");
   const [selectedTypes, setSelectedTypes] = useState(["pov","secret","mistake","controversy"]);
@@ -232,23 +237,8 @@ Number of hooks: ${count}
 Generate ${count} viral TikTok hooks for this video.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
