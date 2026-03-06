@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -74,6 +76,7 @@ function GradeRing({ grade, score }) {
   const color = gradeColors[grade] || C.muted;
   return (
     <div style={{ position:"relative", width:56, height:56, flexShrink:0 }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <svg width="56" height="56" viewBox="0 0 56 56">
         <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4"/>
         <circle cx="28" cy="28" r="23" fill="none" stroke={color} strokeWidth="4"
@@ -223,6 +226,8 @@ function SubjectCard({ result, index }) {
 }
 
 export default function SubjectIQ() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("subjectiq");
+
   const [emailContent, setEmailContent] = useState("");
   const [audience, setAudience]         = useState("");
   const [emailType, setEmailType]       = useState("newsletter");
@@ -278,23 +283,8 @@ Industry: ${industry}
 Generate ${count} subject lines with full scoring analysis.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2500,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
