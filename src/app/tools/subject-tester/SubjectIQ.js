@@ -239,7 +239,7 @@ export default function SubjectIQ() {
 
   const ready = emailContent.trim().length > 0;
 
-  async function generate() {
+  async function doGenerate() {
     if (!ready) return;
     setError("");
     setLoading(true);
@@ -433,7 +433,7 @@ Generate ${count} subject lines with full scoring analysis.`;
         )}
 
         {/* Generate */}
-        <button onClick={generate} disabled={loading || !ready} style={{
+        <button onClick={doGenerate} disabled={loading || !ready} style={{
           width:"100%", padding:16,
           background: (!ready || loading) ? "#2a2a3d" : `linear-gradient(135deg, ${C.accent}, #00C4A0)`,
           border:"none", borderRadius:12,
@@ -483,7 +483,7 @@ Generate ${count} subject lines with full scoring analysis.`;
               {results.map((r, i) => <SubjectCard key={i} result={r} index={i}/>)}
             </div>
 
-            <button onClick={generate} style={{ width:"100%", marginTop:20, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>
+            <button onClick={doGenerate} style={{ width:"100%", marginTop:20, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>
               ↻ Generate new subject lines
             </button>
           </div>
