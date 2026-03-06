@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 export async function POST(req) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
