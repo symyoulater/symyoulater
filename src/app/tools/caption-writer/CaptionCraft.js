@@ -160,7 +160,7 @@ export default function CaptionCraft() {
   const selectedPlatform = PLATFORMS.find(p => p.id === platform);
   const ready = topic.trim().length > 0;
 
-  async function generate() {
+  async function doGenerate() {
     if (!ready) return;
     setError("");
     setLoading(true);
@@ -346,7 +346,7 @@ Generate 3 ${selectedPlatform.label} caption variations.`;
         )}
 
         {/* Generate button */}
-        <button onClick={generate} disabled={loading || !ready} style={{
+        <button onClick={doGenerate} disabled={loading || !ready} style={{
           width:"100%", padding:16,
           background: (!ready || loading) ? "#2a2a3d" : `linear-gradient(135deg, ${C.accent}, #00C4A0)`,
           border:"none", borderRadius:12,
@@ -388,7 +388,7 @@ Generate 3 ${selectedPlatform.label} caption variations.`;
               {captions.map((c, i) => <CaptionCard key={i} caption={c} index={i} platformId={platform}/>)}
             </div>
 
-            <button onClick={generate} style={{ width:"100%", marginTop:20, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, cursor:"pointer" }}>
+            <button onClick={doGenerate} style={{ width:"100%", marginTop:20, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, cursor:"pointer" }}>
               ↻ Generate new variations
             </button>
           </div>
