@@ -188,7 +188,7 @@ export default function OutlineAI() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function generate() {
+  async function doGenerate() {
     if (!ready) return;
     setError("");
     setLoading(true);
@@ -395,7 +395,7 @@ Generate a complete blog post outline with ${targetSections} sections.`;
         )}
 
         {/* Generate */}
-        <button onClick={generate} disabled={loading || !ready} style={{
+        <button onClick={doGenerate} disabled={loading || !ready} style={{
           width:"100%", padding:16,
           background: (!ready || loading) ? "#2a2a3d" : `linear-gradient(135deg, ${C.accent}, #FF9F1C)`,
           border:"none", borderRadius:12,
@@ -460,7 +460,7 @@ Generate a complete blog post outline with ${targetSections} sections.`;
               ))}
             </div>
 
-            <button onClick={generate} style={{ width:"100%", marginTop:8, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>
+            <button onClick={doGenerate} style={{ width:"100%", marginTop:8, padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>
               ↻ Generate new outline
             </button>
           </div>
