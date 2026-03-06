@@ -1,5 +1,6 @@
-import { createClient } from "../../../lib/supabase/server";
-import { createAdminClient } from "../../../lib/supabase/admin";
+import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
 const FREE_LIMIT = 1;
 
@@ -13,7 +14,22 @@ export async function POST(req) {
   }
 
   const tool = req.headers.get("x-tool") || "unknown";
-  const supabase = await createClient();
+
+  // Server supabase client (reads session from cookies)
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cookiesToSet) {
+          try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
+        },
+      },
+    }
+  );
+
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -25,7 +41,11 @@ export async function POST(req) {
       );
     }
   } else {
-    const admin = createAdminClient();
+    // Admin client (bypasses RLS)
+    const admin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
 
     const { data: profile } = await admin
       .from("profiles")
