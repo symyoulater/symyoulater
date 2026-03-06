@@ -283,6 +283,7 @@ Industry: ${industry}
 Generate ${count} subject lines with full scoring analysis.`;
 
     try {
+      const body = { model: "claude-sonnet-4-20250514", max_tokens: 2500, system: systemPrompt, messages: [{ role: "user", content: userPrompt }] };
       const data = await generate(body);
         if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
