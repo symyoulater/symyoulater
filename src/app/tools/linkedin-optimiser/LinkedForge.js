@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -187,6 +189,8 @@ function PostCard({ post, index }) {
 }
 
 export default function LinkedForge() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("linkedforge");
+
   const [topic, setTopic]               = useState("");
   const [context, setContext]           = useState("");
   const [formats, setFormats]           = useState(["story","list"]);
@@ -252,23 +256,8 @@ Include CTA: ${includeCta}
 Generate ${formats.length} LinkedIn post${formats.length > 1 ? "s" : ""}.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 3000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
@@ -283,6 +272,7 @@ Generate ${formats.length} LinkedIn post${formats.length > 1 ? "s" : ""}.`;
 
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", background:C.bg, minHeight:"100vh", color:C.white, paddingBottom:80 }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
       {/* Nav */}
