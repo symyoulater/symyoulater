@@ -278,6 +278,7 @@ Primary goal: ${goal}
 Generate 3 meta title and description variations.`;
 
     try {
+      const body = { model: "claude-sonnet-4-20250514", max_tokens: 2000, system: systemPrompt, messages: [{ role: "user", content: userPrompt }] };
       const data = await generate(body);
         if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
