@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#080810"/>
+
+  <!-- Grid texture -->
+  <defs>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="accent" x1="0" y1="0" x2="600" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF6B35"/>
+      <stop offset="100%" stop-color="#FF9F1C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF6B35" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FF6B35" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <ellipse cx="600" cy="315" rx="500" ry="300" fill="url(#glow)"/>
+
+  <!-- Logo mark -->
+  <rect x="80" y="80" width="72" height="72" rx="18" fill="#13131f" stroke="rgba(255,107,53,0.3)" stroke-width="1.5"/>
+  <path d="M 122 101 C 122 101, 103 101, 100 110 C 97 119, 116 112, 116 121 C 116 130, 100 130, 100 130"
+    stroke="url(#accent)" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="124" cy="130" r="3.5" fill="#FF6B35"/>
+
+  <!-- Wordmark -->
+  <text x="172" y="124" font-family="system-ui, -apple-system, sans-serif" font-size="38" font-weight="800" letter-spacing="-1" fill="#F4F3FF">Sym<tspan fill="#FF6B35">YouLater</tspan></text>
+
+  <!-- Tagline -->
+  <text x="80" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="900" letter-spacing="-2" fill="#F4F3FF">10 AI Marketing Tools</text>
+  <text x="80" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="900" letter-spacing="-2" fill="#F4F3FF">for <tspan fill="#FF6B35">Creators</tspan> &amp; Marketers</text>
+
+  <!-- Sub tagline -->
+  <text x="80" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="400" fill="#6B6B8A">Hashtags · Captions · Hooks · LinkedIn · Meta · Outlines · Ad Copy</text>
+
+  <!-- Tool pills -->
+  <rect x="80" y="510" width="130" height="40" rx="20" fill="rgba(124,106,255,0.15)" stroke="rgba(124,106,255,0.3)" stroke-width="1"/>
+  <text x="145" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#7C6AFF">HashCraft</text>
+
+  <rect x="224" y="510" width="130" height="40" rx="20" fill="rgba(255,107,53,0.15)" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+  <text x="289" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#FF6B35">BioForge</text>
+
+  <rect x="368" y="510" width="145" height="40" rx="20" fill="rgba(106,255,212,0.12)" stroke="rgba(106,255,212,0.3)" stroke-width="1"/>
+  <text x="440" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#6AFFD4">CaptionCraft</text>
+
+  <rect x="527" y="510" width="130" height="40" rx="20" fill="rgba(255,184,106,0.12)" stroke="rgba(255,184,106,0.3)" stroke-width="1"/>
+  <text x="592" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#FFB86A">CalendarAI</text>
+
+  <rect x="671" y="510" width="115" height="40" rx="20" fill="rgba(255,106,158,0.12)" stroke="rgba(255,106,158,0.3)" stroke-width="1"/>
+  <text x="728" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#FF6A9E">HookLab</text>
+
+  <rect x="800" y="510" width="140" height="40" rx="20" fill="rgba(106,255,212,0.1)" stroke="rgba(106,255,212,0.25)" stroke-width="1"/>
+  <text x="870" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#6AFFD4">LinkedForge</text>
+
+  <rect x="954" y="510" width="110" height="40" rx="20" fill="rgba(124,106,255,0.12)" stroke="rgba(124,106,255,0.3)" stroke-width="1"/>
+  <text x="1009" y="535" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="600" fill="#7C6AFF">AdForge</text>
+
+  <!-- URL -->
+  <text x="1120" y="124" text-anchor="end" font-family="system-ui" font-size="22" font-weight="500" fill="#6B6B8A">symyoulater.co.uk</text>
+</svg>
