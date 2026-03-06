@@ -1,13 +1,17 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
-import { createClient } from "../lib/supabase/client";
+import { createBrowserClient } from "@supabase/ssr";
 
 const FREE_KEY = "sym_free_used";
 
 export function useGenerate(toolName = "unknown") {
   const [requiresAuth, setRequiresAuth] = useState(false);
   const [user, setUser] = useState(null);
-  const supabase = createClient();
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
