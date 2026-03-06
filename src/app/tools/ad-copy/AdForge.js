@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -125,6 +127,7 @@ function AdPreview({ ad, platform }) {
 
   return (
     <div style={{ background:"rgba(255,255,255,0.02)", border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 16px" }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <div style={{ fontSize:10, color:C.muted, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:10, fontFamily:"'DM Sans',sans-serif" }}>{plat.label} Preview</div>
       <div style={{ fontSize:14, color:C.white, fontFamily:"'DM Sans',sans-serif", fontWeight:700, marginBottom:6 }}>{ad.headline}</div>
       <div style={{ fontSize:13, color:C.mutedLight, fontFamily:"'DM Sans',sans-serif", lineHeight:1.7, marginBottom:10 }}>{ad.body}</div>
@@ -238,6 +241,8 @@ function AdCard({ ad, index, platform }) {
 }
 
 export default function AdForge() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("adforge");
+
   const [product, setProduct]           = useState("");
   const [audience, setAudience]         = useState("");
   const [usp, setUsp]                   = useState("");
@@ -304,23 +309,8 @@ Tone: ${tone}
 Generate 3 ad copy variations with distinct psychological angles.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2500,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
