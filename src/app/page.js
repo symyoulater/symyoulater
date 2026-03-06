@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
+import AuthModal from "../components/AuthModal";
 
 const C = {
   bg:          "#080810",
@@ -96,7 +98,7 @@ function ToolCard({ tool, index }) {
   );
 }
 
-function PricingCard({ plan }) {
+function PricingCard({ plan, onSignIn }) {
   return (
     <div style={{
       background: plan.primary ? `linear-gradient(135deg, rgba(255,107,53,0.12), rgba(124,106,255,0.08))` : C.card,
@@ -120,7 +122,7 @@ function PricingCard({ plan }) {
           </div>
         ))}
       </div>
-      <button style={{ width:"100%", padding:13, borderRadius:10, border: plan.primary ? "none" : `1px solid ${C.border}`, background: plan.primary ? `linear-gradient(135deg, ${C.accent}, #FF9F1C)` : "transparent", color: plan.primary ? "#fff" : C.mutedLight, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600, cursor:"pointer", boxShadow: plan.primary ? "0 4px 20px rgba(255,107,53,0.3)" : "none" }}>
+      <button onClick={onSignIn} style={{ width:"100%", padding:13, borderRadius:10, border: plan.primary ? "none" : `1px solid ${C.border}`, background: plan.primary ? `linear-gradient(135deg, ${C.accent}, #FF9F1C)` : "transparent", color: plan.primary ? "#fff" : C.mutedLight, fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600, cursor:"pointer", boxShadow: plan.primary ? "0 4px 20px rgba(255,107,53,0.3)" : "none" }}>
         {plan.cta}
       </button>
     </div>
@@ -128,14 +130,40 @@ function PricingCard({ plan }) {
 }
 
 export default function HomePage() {
-  const [scrolled, setScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [scrolled, setScrolled]     = useState(false);
+  const [activeTab, setActiveTab]   = useState("all");
+  const [showAuth, setShowAuth]     = useState(false);
+  const [user, setUser]             = useState(null);
+  const [showMenu, setShowMenu]     = useState(false);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setShowMenu(false);
+    setUser(null);
+  }
+
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0,2)
+    : user?.email?.[0]?.toUpperCase() || "?";
 
   const categories = [
     { id:"all", label:"All Tools" },
@@ -179,16 +207,42 @@ export default function HomePage() {
           ))}
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button style={{ padding:"8px 18px", background:"transparent", border:`1px solid ${C.border}`, borderRadius:8, color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>Log in</button>
-          <Link href="/#tools" style={{ textDecoration:"none" }}><button style={{ padding:"8px 18px", background:C.accent, border:"none", borderRadius:8, color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:"pointer", boxShadow:"0 4px 16px rgba(255,107,53,0.3)" }}>Try free</button></Link>
+          {user ? (
+            <div style={{ position:"relative" }}>
+              <button onClick={() => setShowMenu(!showMenu)} style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,${C.accent},#FF9F1C)`, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#080810", fontFamily:"'DM Sans',sans-serif" }}>
+                {user.user_metadata?.avatar_url
+                  ? <img src={user.user_metadata.avatar_url} alt="" style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover" }}/>
+                  : initials}
+              </button>
+              {showMenu && (
+                <>
+                  <div onClick={() => setShowMenu(false)} style={{ position:"fixed", inset:0, zIndex:200 }}/>
+                  <div style={{ position:"absolute", top:44, right:0, zIndex:201, background:C.card, border:`1px solid ${C.border}`, borderRadius:12, padding:"8px 0", minWidth:180, boxShadow:"0 16px 40px rgba(0,0,0,0.5)" }}>
+                    <div style={{ padding:"8px 16px 12px", borderBottom:`1px solid ${C.border}` }}>
+                      <div style={{ fontSize:13, color:C.white, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>{user.user_metadata?.full_name || "Account"}</div>
+                      <div style={{ fontSize:11, color:C.muted, fontFamily:"'DM Sans',sans-serif", marginTop:2 }}>{user.email}</div>
+                    </div>
+                    <button onClick={handleSignOut} style={{ width:"100%", padding:"10px 16px", textAlign:"left", background:"none", border:"none", color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}
+                      onMouseEnter={e => e.target.style.color = C.white}
+                      onMouseLeave={e => e.target.style.color = C.muted}>
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              <button onClick={() => setShowAuth(true)} style={{ padding:"8px 18px", background:"transparent", border:`1px solid ${C.border}`, borderRadius:8, color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>Log in</button>
+              <button onClick={() => setShowAuth(true)} style={{ padding:"8px 18px", background:C.accent, border:"none", borderRadius:8, color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:"pointer", boxShadow:"0 4px 16px rgba(255,107,53,0.3)" }}>Try free</button>
+            </>
+          )}
         </div>
       </nav>
 
       {/* Hero */}
       <section style={{ position:"relative", minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:"120px 24px 80px", overflow:"hidden" }}>
-        {/* Grid bg */}
         <div style={{ position:"absolute", inset:0, backgroundImage:`linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px)`, backgroundSize:"60px 60px", pointerEvents:"none" }}/>
-        {/* Orbs */}
         <div style={{ position:"absolute", top:"-20%", left:"60%", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%)", pointerEvents:"none" }}/>
         <div style={{ position:"absolute", top:"10%", left:"-10%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(124,106,255,0.07) 0%, transparent 70%)", pointerEvents:"none" }}/>
 
@@ -281,7 +335,7 @@ export default function HomePage() {
           <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:C.muted, maxWidth:400, margin:"0 auto" }}>Start free. Upgrade when you&apos;re ready. No hidden fees, ever.</p>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:20, alignItems:"center" }}>
-          {PLANS.map(plan => <PricingCard key={plan.name} plan={plan}/>)}
+          {PLANS.map(plan => <PricingCard key={plan.name} plan={plan} onSignIn={() => setShowAuth(true)}/>)}
         </div>
       </section>
 
@@ -293,7 +347,7 @@ export default function HomePage() {
           <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:C.muted, maxWidth:440, margin:"0 auto 32px", lineHeight:1.7 }}>
             Join hundreds of creators and marketers using SymYouLater to save hours every week.
           </p>
-          <button style={{ padding:"14px 40px", background:`linear-gradient(135deg, ${C.accent}, #FF9F1C)`, border:"none", borderRadius:10, color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:15, fontWeight:600, cursor:"pointer", boxShadow:"0 8px 32px rgba(255,107,53,0.3)" }}>
+          <button onClick={() => setShowAuth(true)} style={{ padding:"14px 40px", background:`linear-gradient(135deg, ${C.accent}, #FF9F1C)`, border:"none", borderRadius:10, color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:15, fontWeight:600, cursor:"pointer", boxShadow:"0 8px 32px rgba(255,107,53,0.3)" }}>
             Get started free — no card needed
           </button>
         </div>
@@ -312,6 +366,8 @@ export default function HomePage() {
         </div>
         <div style={{ fontSize:12, color:C.muted, fontFamily:"'DM Sans',sans-serif" }}>© 2025 SymYouLater. All rights reserved.</div>
       </footer>
+
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)}/>}
     </div>
   );
 }
