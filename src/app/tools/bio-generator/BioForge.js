@@ -181,6 +181,7 @@ Include emojis: ${emoji}
 Generate 3 Instagram bio variations.`;
 
     try {
+      const body = { model: "claude-sonnet-4-20250514", max_tokens: 1000, system: systemPrompt, messages: [{ role: "user", content: userPrompt }] };
       const data = await generate(body);
         if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
