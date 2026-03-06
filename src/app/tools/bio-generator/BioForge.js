@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -131,6 +133,8 @@ function BioCard({ bio, index }) {
 }
 
 export default function BioForge() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("bioforge");
+
   const [name, setName]         = useState("");
   const [niche, setNiche]       = useState("");
   const [keywords, setKeywords] = useState("");
@@ -177,23 +181,8 @@ Include emojis: ${emoji}
 Generate 3 Instagram bio variations.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
@@ -211,6 +200,7 @@ Generate 3 Instagram bio variations.`;
 
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", background:C.bg, minHeight:"100vh", color:C.white, padding:"0 0 80px" }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       {/* Platform nav */}
       <nav style={{ padding:"0 24px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:`1px solid ${C.border}`, background:"rgba(8,8,16,0.9)", backdropFilter:"blur(20px)", position:"sticky", top:0, zIndex:100 }}>
         <Link href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
