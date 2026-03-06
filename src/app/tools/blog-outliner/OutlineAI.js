@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -80,6 +82,7 @@ function SectionCard({ section, index, totalSections }) {
 
   return (
     <div style={{ display:"flex", gap:0 }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       {/* Timeline */}
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", width:32, flexShrink:0 }}>
         <div style={{ width:28, height:28, borderRadius:"50%", background:`${color}18`, border:`2px solid ${color}66`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontFamily:"'DM Mono',monospace", color, fontWeight:700, flexShrink:0 }}>
@@ -147,6 +150,8 @@ function SectionCard({ section, index, totalSections }) {
 }
 
 export default function OutlineAI() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("outlineai");
+
   const [topic, setTopic]               = useState("");
   const [audience, setAudience]         = useState("");
   const [keywords, setKeywords]         = useState("");
@@ -235,23 +240,8 @@ SEO optimisation: ${includeSeo}
 Generate a complete blog post outline with ${targetSections} sections.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 3000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\{[\s\S]*\}/);
