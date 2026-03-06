@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const GROUPS = [
   { key: "broad",    label: "Broad Reach",        color: "#7c6aff" },
@@ -42,7 +44,7 @@ const LANGS  = ["english","spanish","french","german","portuguese","italian","ja
 
 function HashCraftLogo({ size = 52 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 52 52" fill="none">
       <defs>
         <linearGradient id="hcg" x1="4" y1="8" x2="48" y2="44" gradientUnits="userSpaceOnUse">
           <stop offset="0%"   stopColor="#c4b5fd"/>
@@ -89,6 +91,8 @@ export default function HashCraft() {
   const [copied, setCopied]           = useState(false);
   const outputRef = useRef(null);
 
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("hashcraft");
+
   const currentPlatform = PLATFORMS.find(function(p) { return p.id === platform; });
   const allTags = tagData
     ? GROUPS.flatMap(function(g) { return (tagData[g.key] || []).map(function(t) { return t.replace(/^#/, ""); }); })
@@ -108,7 +112,7 @@ export default function HashCraft() {
     });
   }
 
-  async function generate() {
+  async function doGenerate() {
     if (!postText.trim()) { setError("Please enter some post text first."); return; }
     setError("");
     setLoading(true);
@@ -138,18 +142,10 @@ export default function HashCraft() {
         var body = { model: "claude-sonnet-4-20250514", max_tokens: 1500, system: systemPrompt, messages: messages };
         if (tools) body.tools = tools;
 
-        var res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
+        var data = await generate(body);
 
-        if (!res.ok) {
-          var e = await res.json();
-          throw new Error((e.error && e.error.message) || "API error");
-        }
-
-        var data = await res.json();
+        // generate() returns null if auth is required — hook sets requiresAuth automatically
+        if (data === null) { setLoading(false); return; }
 
         if (data.stop_reason === "end_turn") {
           finalText = data.content.filter(function(b) { return b.type === "text"; }).map(function(b) { return b.text; }).join("");
@@ -173,7 +169,11 @@ export default function HashCraft() {
       if (!match) throw new Error("Could not parse response.");
       setTagData(JSON.parse(match[0]));
     } catch (err) {
-      setError("Error: " + err.message);
+      if (err.message === "LIMIT_REACHED") {
+        setError("You've reached your daily limit. Upgrade to Pro for unlimited generations.");
+      } else {
+        setError("Error: " + err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -188,6 +188,7 @@ export default function HashCraft() {
 
   return (
     <div style={{ fontFamily:"'DM Mono',monospace", background:"#0a0a0f", minHeight:"100vh", color:"#f0eeff", padding:"44px 24px 80px" }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <div style={{ maxWidth:720, margin:"0 auto" }}>
 
         {/* Platform nav */}
@@ -274,7 +275,7 @@ export default function HashCraft() {
         {error && <div style={{ background:"rgba(255,106,158,0.1)", border:"1.5px solid rgba(255,106,158,0.3)", borderRadius:9, padding:"11px 14px", fontSize:13, color:"#ff6a9e", marginBottom:14 }}>{error}</div>}
 
         {/* Generate button */}
-        <button onClick={generate} disabled={loading} style={{ width:"100%", padding:16, background:loading?"#3a3a5a":(currentPlatform?currentPlatform.gradient:"linear-gradient(135deg,#7c6aff,#9b8aff)"), border:"none", borderRadius:12, color:"#fff", fontFamily:"'Outfit',sans-serif", fontSize:17, fontWeight:800, letterSpacing:"0.04em", cursor:loading?"not-allowed":"pointer", marginBottom:32, opacity:loading?0.6:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, boxShadow:"0 4px 24px rgba(124,106,255,0.18)" }}>
+        <button onClick={doGenerate} disabled={loading} style={{ width:"100%", padding:16, background:loading?"#3a3a5a":(currentPlatform?currentPlatform.gradient:"linear-gradient(135deg,#7c6aff,#9b8aff)"), border:"none", borderRadius:12, color:"#fff", fontFamily:"'Outfit',sans-serif", fontSize:17, fontWeight:800, letterSpacing:"0.04em", cursor:loading?"not-allowed":"pointer", marginBottom:32, opacity:loading?0.6:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, boxShadow:"0 4px 24px rgba(124,106,255,0.18)" }}>
           {!loading && currentPlatform && <span style={{ opacity:0.9, display:"flex" }}>{currentPlatform.icon}</span>}
           {loading ? loadingMsg : "Generate " + platform + " Hashtags"}
         </button>
