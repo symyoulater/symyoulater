@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useGenerate } from "../../../hooks/useGenerate";
+import AuthModal from "../../../components/AuthModal";
 
 const C = {
   bg:         "#080810",
@@ -72,6 +74,7 @@ function CharBar({ current, max, warningAt, label }) {
   const color = isOver ? "#FF6A9E" : isWarning ? "#FFB86A" : C.accent;
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+      {requiresAuth && <AuthModal onClose={() => setRequiresAuth(false)}/>}
       <div style={{ fontSize:10, color:C.muted, fontFamily:"'DM Mono',monospace", width:80, flexShrink:0 }}>{label}</div>
       <div style={{ flex:1, height:4, background:"rgba(255,255,255,0.06)", borderRadius:99, overflow:"hidden" }}>
         <div style={{ height:"100%", width:`${pct}%`, background:color, borderRadius:99, transition:"width 0.4s" }}/>
@@ -213,6 +216,8 @@ function MetaCard({ result, index, domain }) {
 }
 
 export default function MetaCraft() {
+  const { generate, requiresAuth, setRequiresAuth } = useGenerate("metacraft");
+
   const [pageTitle, setPageTitle] = useState("");
   const [keywords, setKeywords]   = useState("");
   const [pageUrl, setPageUrl]     = useState("");
@@ -273,23 +278,8 @@ Primary goal: ${goal}
 Generate 3 meta title and description variations.`;
 
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 2000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-        }),
-      });
-
-      if (!res.ok) {
-        const e = await res.json();
-        throw new Error((e.error && e.error.message) || "API error");
-      }
-
-      const data = await res.json();
+      const data = await generate(body);
+        if (data === null) { setLoading(false); return; }
       const text = data.content.filter(b => b.type === "text").map(b => b.text).join("");
       const cleaned = text.replace(/```json|```/g, "").trim();
       const match = cleaned.match(/\[[\s\S]*\]/);
