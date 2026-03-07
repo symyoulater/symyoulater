@@ -364,7 +364,7 @@ export default function HomePage() {
             <a key={l} href="#" style={{ fontSize:13, color:C.muted, fontFamily:"'DM Sans',sans-serif", textDecoration:"none" }}>{l}</a>
           ))}
         </div>
-        <div style={{ fontSize:12, color:C.muted, fontFamily:"'DM Sans',sans-serif" }}>© 2025 SymYouLater. All rights reserved.</div>
+        <div style={{ fontSize:12, color:C.muted, fontFamily:"'DM Sans',sans-serif" }}>© 2026 SymYouLater. All rights reserved.</div>
       </footer>
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)}/>}
