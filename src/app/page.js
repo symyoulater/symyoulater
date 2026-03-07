@@ -233,7 +233,7 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              <button onClick={() => setShowAuth(true)} style={{ padding:"8px 18px", background:"transparent", border:`1px solid ${C.border}`, borderRadius:8, color:C.muted, fontFamily:"'DM Sans',sans-serif", fontSize:13, cursor:"pointer" }}>Log in</button>
+              <button onClick={() => setShowAuth(true)} style={{ padding:"8px 18px", background:C.white, border:"none", borderRadius:8, color:"#080810", fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:"pointer" }}>Log in</button>
               <button onClick={() => setShowAuth(true)} style={{ padding:"8px 18px", background:C.accent, border:"none", borderRadius:8, color:"#fff", fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:600, cursor:"pointer", boxShadow:"0 4px 16px rgba(255,107,53,0.3)" }}>Try free</button>
             </>
           )}
