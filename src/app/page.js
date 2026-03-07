@@ -1,4 +1,13 @@
 import { redirect } from "next/navigation";
-export default function Home() {
-  redirect("/coming-soon");
+import { headers } from "next/headers";
+
+export default async function Home() {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  
+  if (host.includes("symyoulater.co.uk")) {
+    redirect("/coming-soon");
+  }
+  
+  redirect("/home");
 }
