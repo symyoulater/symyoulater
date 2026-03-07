@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 
+"use client";
+import { useState, useEffect } from "react";
+
 const C = {
   bg:         "#080810",
   accent:     "#FF6B35",
@@ -28,16 +31,21 @@ function SymLogo({ size = 40 }) {
 }
 
 export default function ComingSoon() {
-  const [email, setEmail]       = useState("");
+  const [email, setEmail]         = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [mounted, setMounted]   = useState(false);
+  const [mounted, setMounted]     = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!email.trim() || !email.includes("@")) return;
+    await fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
     setSubmitted(true);
   }
 
@@ -127,7 +135,7 @@ export default function ComingSoon() {
 
         {/* Tool teaser pills */}
         <div className="fade-up-5" style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 56 }}>
-          {["HashCraft","BioForge","CaptionCraft","CalendarAI","HookLab","LinkedForge","MetaCraft","OutlineAI","SubjectIQ","AdForge"].map((tool, i) => (
+          {["HashCraft","BioForge","CaptionCraft","CalendarAI","HookLab","LinkedForge","MetaCraft","OutlineAI","SubjectIQ","AdForge"].map((tool) => (
             <span key={tool} style={{ padding: "5px 12px", borderRadius: 99, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, fontSize: 12, color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>
               {tool}
             </span>
