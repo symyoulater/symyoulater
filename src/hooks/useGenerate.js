@@ -23,10 +23,11 @@ export function useGenerate(toolName = "unknown") {
 
   const generate = useCallback(async (body) => {
     const isAuthed = !!user;
-    const alreadyUsedFree = typeof window !== "undefined"
-      ? localStorage.getItem(FREE_KEY) === "true" : false;
+    const freeCount = typeof window !== "undefined"
+      ? parseInt(localStorage.getItem(FREE_KEY) || "0") : 0;
+    const alreadyUsedFree = freeCount >= 3;
 
-    // Client-side gate: not logged in and already used free generation
+    // Client-side gate: not logged in and used all 3 free generations
     if (!isAuthed && alreadyUsedFree) {
       setRequiresAuth(true);
       return null;
@@ -54,7 +55,10 @@ export function useGenerate(toolName = "unknown") {
     }
 
     const data = await res.json();
-    if (!isAuthed) localStorage.setItem(FREE_KEY, "true");
+    // Increment free counter after successful generation
+    if (!isAuthed) {
+      localStorage.setItem(FREE_KEY, String(freeCount + 1));
+    }
     return data;
   }, [user, toolName]);
 

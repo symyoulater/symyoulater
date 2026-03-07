@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-const FREE_LIMIT = 1;
+const FREE_LIMIT = 3; // Free users can generate 3 times per day
 
 export async function POST(req) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -63,8 +63,7 @@ export async function POST(req) {
         .from("usage")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .eq("tool", tool)
-        .gte("used_at", today.toISOString());
+        
 
       if ((count || 0) >= FREE_LIMIT) {
         return new Response(
