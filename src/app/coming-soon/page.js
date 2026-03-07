@@ -1,9 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 
-"use client";
-import { useState, useEffect } from "react";
-
 const C = {
   bg:         "#080810",
   accent:     "#FF6B35",
